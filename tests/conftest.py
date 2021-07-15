@@ -49,6 +49,7 @@ async def cache(redis_backend):
         global_timeout=3.0,
     )
     yield o
+    await o.close()
 
 
 @pytest.fixture(scope='function')
@@ -63,5 +64,6 @@ def cleanup(request, redis_port):
         loop = asyncio.get_event_loop()
         backend = RedisBackend(port=redis_port, db=REDIS_DB, loop=loop)
         loop.run_until_complete(backend.clear())
+        loop.run_until_complete(backend.close())
         loop.close()
     request.addfinalizer(clear_cache)
