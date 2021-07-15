@@ -19,11 +19,11 @@ from typing import (
     TypeVar,
 )
 
-from rediscache.types import KeyBuildFn
-from rediscache.utils import trim_key, default_key_builder
-from rediscache.plugins import PluginT
-from rediscache.backends import BackendT
-from rediscache.serializers import SerializerT, DillSerializer
+from aiocacher.types import KeyBuildFn
+from aiocacher.utils import trim_key, default_key_builder
+from aiocacher.plugins import PluginT
+from aiocacher.backends import BackendT
+from aiocacher.serializers import SerializerT, DillSerializer
 
 UNSET = object()
 MISSING = object()

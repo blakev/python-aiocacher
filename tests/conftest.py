@@ -13,8 +13,8 @@ import string
 
 import pytest
 
-from rediscache.cache import Cache
-from rediscache.backends.redis import RedisBackend
+from aiocacher.cache import Cache
+from aiocacher.backends.redis import RedisBackend
 
 
 CHARS = string.ascii_letters + string.digits

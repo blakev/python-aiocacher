@@ -12,11 +12,11 @@ from dataclasses import dataclass
 
 import pytest
 
-from rediscache.cache import UNSET, Cache
+from aiocacher.cache import UNSET, Cache
 
 
 # All test coroutines will be treated as marked.
-from rediscache.plugins.stats import StatsPlugin
+from aiocacher.plugins.stats import StatsPlugin
 
 pytestmark = pytest.mark.asyncio
 

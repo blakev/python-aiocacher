@@ -7,7 +7,7 @@
 # <<
 
 
-from rediscache.utils import *
+from aiocacher.utils import *
 
 
 def test_chunk():

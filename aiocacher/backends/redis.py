@@ -19,7 +19,7 @@ from typing import (
 from aioredis import Redis, create_redis_pool
 from aioredis.pool import ConnectionsPool
 
-from rediscache.utils import chunks
+from aiocacher.utils import chunks
 
 
 def connection(func: Callable):

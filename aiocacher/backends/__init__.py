@@ -6,7 +6,7 @@
 #   LiveViewTech
 # <<
 
-from rediscache.backends._base import BackendT
+from aiocacher.backends._base import BackendT
 
 
 __all__ = [

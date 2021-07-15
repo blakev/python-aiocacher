@@ -8,7 +8,7 @@
 
 import pytest
 
-from rediscache.serializers import DillSerializer
+from aiocacher.serializers import DillSerializer
 
 
 @pytest.fixture(scope='function')

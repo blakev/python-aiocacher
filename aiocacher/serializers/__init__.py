@@ -6,8 +6,8 @@
 #   LiveViewTech
 # <<
 
-from rediscache.serializers._base import BaseSerializer as SerializerT
-from rediscache.serializers.serializers import *
+from aiocacher.serializers._base import BaseSerializer as SerializerT
+from aiocacher.serializers.serializers import *
 
 
 __all__ = [

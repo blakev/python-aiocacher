@@ -6,7 +6,7 @@
 #   LiveViewTech
 # <<
 
-from rediscache.plugins._base import PluginT
+from aiocacher.plugins._base import PluginT
 
 
 __all__ = [
