@@ -6,6 +6,11 @@
 #   LiveViewTech
 # <<
 
+"""cache.py
+
+This is the main documentation for cache.py
+"""
+
 import asyncio
 from time import monotonic
 from asyncio import AbstractEventLoop
@@ -274,10 +279,9 @@ class Cache:
         self,
         key: str,
         default=UNSET,
-        _conn=None,
     ):
         key = self.build_key(key)
-        val = await self._backend.get(key, _conn=_conn)
+        val = await self._backend.get(key)
         val = self._serializer.loads(val)
 
         # handle None-like sentinel value for cached None values
@@ -297,12 +301,11 @@ class Cache:
         key: str,
         value: Any,
         ttl: Optional[float] = GLOBAL_TTL,
-        _conn=None,
     ) -> Any:
         key = self.build_key(key)
         val = self._serializer.dumps(value)
         ttl = self._get_ttl(ttl)
-        res = await self._backend.set(key, val, ttl=ttl, _conn=_conn)
+        res = await self._backend.set(key, val, ttl=ttl)
         return res
 
     @logged
@@ -312,7 +315,6 @@ class Cache:
         self,
         keys_vals: Dict[str, Any],
         ttl: Optional[float] = GLOBAL_TTL,
-        _conn=None,
     ):
         # yapf: disable
         keys_vals = {
@@ -321,7 +323,7 @@ class Cache:
         }
         # yapf: enable
         ttl = self._get_ttl(ttl)
-        res = await self._backend.setmany(keys_vals, ttl=ttl, _conn=_conn)
+        res = await self._backend.setmany(keys_vals, ttl=ttl)
         return res
 
     @logged
@@ -332,12 +334,11 @@ class Cache:
         key: str,
         value: Any,
         ttl: Optional[float] = GLOBAL_TTL,
-        _conn=None,
     ) -> Any:
         key = self.build_key(key)
         val = self._serializer.dumps(value)
         ttl = self._get_ttl(ttl)
-        res = await self._backend.replace(key, val, ttl=ttl, _conn=_conn)
+        res = await self._backend.replace(key, val, ttl=ttl)
         res = self._serializer.loads(res)
         return res
 
@@ -347,26 +348,25 @@ class Cache:
         self,
         key: str,
         ttl: float,
-        _conn=None,
     ) -> Any:
         key = self.build_key(key)
         ttl = max(0.0, ttl)
-        res = await self._backend.expire(key, ttl, _conn=_conn)
+        res = await self._backend.expire(key, ttl)
         return res
 
     @logged
     @timeout
     @locked
-    async def delete(self, key: str, _conn=None) -> bool:
+    async def delete(self, key: str) -> bool:
         key = self.build_key(key)
-        res = await self._backend.delete(key, _conn=_conn)
+        res = await self._backend.delete(key)
         return res
 
     @logged
     @timeout
     @locked
-    async def clear(self, _conn=None) -> None:
-        await self._backend.clear(_conn=_conn)
+    async def clear(self) -> None:
+        await self._backend.clear()
 
     # plugin helpers
 

@@ -6,9 +6,10 @@
 #   LiveViewTech
 # <<
 
-from aiocacher.backends._base import BackendT
+from aiocacher.backends._base import BaseBackend, BackendT
 
 
 __all__ = [
     'BackendT',
+    'BaseBackend',
 ]

@@ -19,6 +19,7 @@ from typing import (
 from aioredis import Redis, create_redis_pool
 from aioredis.pool import ConnectionsPool
 
+from aiocacher.backends import BaseBackend
 from aiocacher.utils import chunks
 
 
@@ -48,7 +49,7 @@ def connection(func: Callable):
     return wrapped
 
 
-class RedisBackend:
+class RedisBackend(BaseBackend):
 
     ENCODING = 'latin-1'
 
@@ -63,6 +64,8 @@ class RedisBackend:
         connect_timeout: Optional[float] = None,
         loop: Optional[AbstractEventLoop] = None,
     ):
+        super().__init__(loop=loop)
+
         self._host = host
         self._port = port
         self._db = max(0, db)
@@ -71,15 +74,14 @@ class RedisBackend:
         self._maxsize = pool_maxsize
         self._conn_timeout = max(0.1, connect_timeout) if connect_timeout else None
 
-        self.loop = loop or asyncio.get_event_loop()
         self._pool: Optional[ConnectionsPool] = None
         self._pool_lock = asyncio.Lock()
 
     async def get_pool(self) -> ConnectionsPool:
-        if self._pool:
-            return self._pool
-
         async with self._pool_lock:
+            if self._pool:
+                return self._pool
+
             kwargs = {
                 'db': self._db,
                 'minsize': self._minsize,
@@ -87,11 +89,13 @@ class RedisBackend:
                 'password': self._password,
                 'timeout': self._conn_timeout,
             }
+
             self._pool = await create_redis_pool(
                 (self._host, self._port),
                 **kwargs,
             )
-        return self._pool
+
+            return self._pool
 
     async def close(self) -> None:
         if self._pool is None:

@@ -27,12 +27,18 @@ class CacheStats:
     cache_types: Counter = field(default_factory=Counter)
 
     @property
+    def hit_ratio(self) -> float:
+        return float(self.cache_hits) / float(self.cache_hits + self.cache_misses)
+
+    @property
     def top_types(self) -> Dict[str, int]:
         counts = dict(self.cache_types.most_common(5))
         return {str(k): v for k, v in counts.items()}
 
 
 class StatsPlugin:
+
+    __slots__ = ('stats',)
 
     def __init__(self):
         self.stats = CacheStats()

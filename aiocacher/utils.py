@@ -47,4 +47,9 @@ def default_key_builder(func, args, kwargs) -> str:
 
 
 def trim_key(key: str) -> str:
+    """Fixes a string to a fixed length defined as a constant ``MAX_KEYLEN``.
+
+    >>> trim_key('')
+    ''
+    """
     return str(key)[:MAX_KEYLEN]
