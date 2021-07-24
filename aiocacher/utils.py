@@ -7,15 +7,12 @@
 # <<
 
 from hashlib import sha1
-from itertools import islice
-from typing import Iterable
 
 from toolz.functoolz import is_arity, has_keywords
 
 
 __all__ = [
     'MAX_KEYLEN',
-    'chunks',
     'default_key_builder',
     'trim_key',
 ]
@@ -23,12 +20,8 @@ __all__ = [
 MAX_KEYLEN = 80
 
 
-def chunks(ins: Iterable, size: int) -> Iterable[tuple]:
-    it = iter(ins)
-    return iter(lambda: tuple(islice(it, size)), ())
-
-
 def default_key_builder(func, args, kwargs) -> str:
+    """Converts keys passed to a single function into a SHA1 checksum for caching."""
     try:
         has_kwargs = has_keywords(func) is not False
         is_unary = is_arity(1, func)

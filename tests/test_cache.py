@@ -100,13 +100,15 @@ async def test_decorator(cache: Cache, random_string, plugin):
         plugin = plugin()
         cache.add_plugin(plugin)
 
-    @cache.cached(namespace=random_string, ttl=3.0)
+    @cache.cached(namespace=random_string, ttl=0.5)
     async def func():
         return random.randint(0, 10)
 
     x = await func()
     for _ in range(100):
         assert await func() == x
+
+    await asyncio.sleep(0.5)
 
     if plugin:
         assert plugin.stats.cache_misses == 1

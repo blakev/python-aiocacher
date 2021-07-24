@@ -18,9 +18,9 @@ from typing import (
 
 from aioredis import Redis, create_redis_pool
 from aioredis.pool import ConnectionsPool
+from toolz.itertoolz import partition_all
 
 from aiocacher.backends import BaseBackend
-from aiocacher.utils import chunks
 
 
 def connection(func: Callable):
@@ -146,7 +146,7 @@ class RedisBackend(BaseBackend):
         ttl: Optional[float],
         _conn: Redis,
     ) -> int:
-        for chunk in chunks(keys_vals.items(), 100):
+        for chunk in partition_all(100, keys_vals.items()):
             await _conn.mset(chunk)
             pipe = _conn.multi_exec()
             for k, _ in chunk:
