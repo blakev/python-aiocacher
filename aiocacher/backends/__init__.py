@@ -7,9 +7,11 @@
 # <<
 
 from aiocacher.backends._base import BaseBackend, BackendT
+from aiocacher.backends.redis import RedisBackend
 
 
 __all__ = [
     'BackendT',
     'BaseBackend',
+    'RedisBackend',
 ]

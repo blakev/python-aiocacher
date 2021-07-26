@@ -33,6 +33,9 @@ class BackendT(Protocol):
     def loop(self) -> AbstractEventLoop:
         raise NotImplementedError
 
+    async def setup(self, loop: AbstractEventLoop, **kwargs) -> None:
+        ...
+
     async def close(self) -> None:
         ...
 
@@ -67,5 +70,7 @@ class BaseBackend:
     @property
     def loop(self) -> AbstractEventLoop:
         return self._loop
+
+
 
 

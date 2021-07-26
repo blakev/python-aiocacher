@@ -22,6 +22,10 @@ from toolz.itertoolz import partition_all
 
 from aiocacher.backends import BaseBackend
 
+__all__ = [
+    'RedisBackend',
+]
+
 
 def connection(func: Callable):
     """Returns a fresh Redis connection to do operations on."""
@@ -76,6 +80,14 @@ class RedisBackend(BaseBackend):
 
         self._pool: Optional[ConnectionsPool] = None
         self._pool_lock = asyncio.Lock()
+
+    async def setup(self, loop: AbstractEventLoop, **kwargs) -> None:
+        """Allow a deferred setup until after the event loop is running."""
+
+        if self._pool is not None:
+            raise RuntimeError('cannot change event loop after pool is instantiated')
+        self.logger.debug('updating event loop')
+        self._loop = loop
 
     async def get_pool(self) -> ConnectionsPool:
         async with self._pool_lock:

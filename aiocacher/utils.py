@@ -44,5 +44,7 @@ def trim_key(key: str) -> str:
 
     >>> trim_key('')
     ''
+    >>> trim_key('abc')
+    'abc'
     """
     return str(key)[:MAX_KEYLEN]
