@@ -32,7 +32,7 @@ def default_key_builder(func, args, kwargs) -> str:
     if is_unary:
         k = str(args[0])
     elif has_kwargs:
-        k = (args or None, frozenset(kwargs.items() if kwargs else None))
+        k = (args or None, frozenset(kwargs.items() if kwargs else []))
     else:
         k = args
     key = sha1(str(k).encode('utf-8')).hexdigest()[:MAX_KEYLEN]

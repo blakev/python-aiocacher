@@ -96,6 +96,7 @@ class FnCache:
         as_last_arg: bool = False,
         wait_for_write: bool = True,
         use_plugins: bool = True,
+        omit_self: bool = True,
     ):
         if key_builder and not callable(key_builder):
             raise RuntimeError('key_builder must be callable')
@@ -109,6 +110,7 @@ class FnCache:
         self._use_plugins = use_plugins
         self.cache = cache
         self._called = False
+        self._omit_self = omit_self
 
     @property
     def use_plugins(self) -> bool:
@@ -147,7 +149,14 @@ class FnCache:
             k = self._key
 
         elif self._key_builder:
-            k = self._key_builder(func, args, kwargs)
+            if self._omit_self and args:
+                # we don't want to pass `self`, the first instance parameter of `func`
+                #  to the key builder; default __repr__ will include memory location
+                # which will taint our cache key builder with a non-static value.
+                k = self._key_builder(func, args[1:], kwargs)
+            else:
+                # .. this is probably caching a staticmethod
+                k = self._key_builder(func, args, kwargs)
 
         elif not args and not kwargs:
             k = f'{func.__module__ or ""}_{func.__qualname__}'
@@ -261,6 +270,7 @@ class Cache:
         as_last_arg: bool = False,
         wait_for_write: bool = True,
         use_plugins: bool = True,
+        omit_self: bool = True,
     ) -> FnCache:
         return FnCache(
             cache=self,  # backref
@@ -271,6 +281,7 @@ class Cache:
             as_last_arg=as_last_arg,
             wait_for_write=wait_for_write,
             use_plugins=use_plugins,
+            omit_self=omit_self,
         )
 
     @logged
