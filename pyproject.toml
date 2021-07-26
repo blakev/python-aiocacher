@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aiocacher"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python asyncio caching decorator backed by a Redis server or cluster."
 authors = ["Blake VandeMerwe <blakev@null.net>"]
 license = "MIT"
