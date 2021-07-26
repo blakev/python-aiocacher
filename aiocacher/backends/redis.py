@@ -83,15 +83,13 @@ class RedisBackend(BaseBackend):
 
     async def setup(self, loop: AbstractEventLoop, **kwargs) -> None:
         """Allow a deferred setup until after the event loop is running."""
-
-        if self._pool is not None:
-            raise RuntimeError('cannot change event loop after pool is instantiated')
+        await self.close()
         self.logger.debug('updating event loop')
         self._loop = loop
 
     async def get_pool(self) -> ConnectionsPool:
         async with self._pool_lock:
-            if self._pool:
+            if self._pool and not self._pool.closed:
                 return self._pool
 
             kwargs = {
