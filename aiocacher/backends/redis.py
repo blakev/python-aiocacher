@@ -193,6 +193,8 @@ class RedisBackend(BaseBackend):
         namespace = f'{global_namespace}:{namespace}:'
         while cursor:
             cursor, keys = await _conn.scan(cursor, match=f'{namespace}*')
-            count += len(keys)
-            print(keys)
+            if keys:
+                count += len(keys)
+                key, *keys = keys
+                await _conn.delete(key, *keys)
         return count
