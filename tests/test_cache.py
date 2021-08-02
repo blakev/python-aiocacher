@@ -115,3 +115,22 @@ async def test_decorator(cache: Cache, random_string, plugin):
         assert plugin.stats.cache_hits > 0
         assert str(int) in plugin.stats.top_types
         assert len(plugin.stats.top_types) == 1
+
+
+async def test_clear_namespace(cache: Cache):
+
+    @cache.cached(ttl=1.0, namespace='inside', omit_self=False)
+    async def func(val: str):
+        return True if val else False
+
+    @cache.cached(ttl=1.0, namespace='outside', omit_self=False)
+    async def other(val: str):
+        return False if val else True
+
+    assert await func('a')
+    assert await func('b')
+    assert await cache.clear_namespace('outside') == 0
+    assert await cache.clear_namespace('inside') == 2
+    assert await other('')
+    assert await cache.clear_namespace('outside') == 1
+

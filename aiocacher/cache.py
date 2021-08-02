@@ -379,6 +379,12 @@ class Cache:
     async def clear(self) -> None:
         await self._backend.clear()
 
+    @logged
+    @timeout
+    @locked
+    async def clear_namespace(self, namespace: str) -> int:
+        return await self._backend.clear_namespace(self._namespace, namespace)
+
     # plugin helpers
 
     async def _before_first_call(self) -> None:

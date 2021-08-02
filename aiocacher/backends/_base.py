@@ -60,6 +60,9 @@ class BackendT(Protocol):
     async def clear(self, _conn: Any) -> None:
         ...
 
+    async def clear_namespace(self, global_namespace: str, namespace: str, _conn: Any) -> int:
+        ...
+
 
 class BaseBackend:
 

@@ -180,3 +180,19 @@ class RedisBackend(BaseBackend):
     @connection
     async def clear(self, _conn: Redis) -> None:
         await _conn.flushdb(async_op=True)
+
+    @connection
+    async def clear_namespace(
+        self,
+        global_namespace: str,
+        namespace: str,
+        _conn: Redis,
+    ) -> int:
+        count = 0
+        cursor = b'0'
+        namespace = f'{global_namespace}:{namespace}:'
+        while cursor:
+            cursor, keys = await _conn.scan(cursor, match=f'{namespace}*')
+            count += len(keys)
+            print(keys)
+        return count
