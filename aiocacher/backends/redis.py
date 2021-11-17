@@ -144,10 +144,10 @@ class RedisBackend(BaseBackend):
     ) -> int:
         for chunk in partition_all(100, keys_vals.items()):
             await _conn.mset(chunk)
-            pipe = _conn.multi_exec()
-            for k, _ in chunk:
-                pipe.expire(k, ttl)
-            await pipe.execute()
+            async with _conn.pipeline(transaction=True) as pipe:
+                for k, _ in chunk:
+                    pipe = pipe.expire(k, ttl)
+                await pipe.execute()
         return len(keys_vals)
 
     @connection
