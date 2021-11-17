@@ -30,10 +30,6 @@ class Stats:
         return cls(a=a, b=b, c=c)
 
 
-def test_ensure_dill():
-    assert DillSerializer is not PickleSerializer
-
-
 @pytest.mark.parametrize('serializer', [
     PickleSerializer(),
     DillSerializer(),

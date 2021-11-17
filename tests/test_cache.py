@@ -40,10 +40,10 @@ async def test_missing(cache: Cache):
 async def test_set(cache: Cache, random_string, ins):
     key = random_string
     assert await cache.get(key, None) is None
-    assert await cache.set(key, ins, ttl=0.1)
+    assert await cache.set(key, ins, ttl=1)
     out = await cache.get(key)
     assert out == ins
-    await asyncio.sleep(0.15)
+    await asyncio.sleep(1.1)
     assert await cache.get(key) is None
 
 
@@ -59,9 +59,9 @@ async def test_replace(cache: Cache, random_string, ins):
     c = await cache.replace(random_string, b)
     assert a == c
     assert await cache.get(random_string) == b
-    d = await cache.replace(random_string, b, ttl=0.1)
+    d = await cache.replace(random_string, b, ttl=1)
     assert b == d
-    await asyncio.sleep(0.11)
+    await asyncio.sleep(1.1)
     assert await cache.get(random_string) is None
 
 
@@ -73,9 +73,9 @@ async def test_replace(cache: Cache, random_string, ins):
 ])
 async def test_expire(cache: Cache, random_string, ins):
     await cache.set(random_string, ins)
-    await cache.expire(random_string, 0.1)
+    await cache.expire(random_string, 1)
     assert await cache.get(random_string, UNSET) == ins
-    await asyncio.sleep(0.12)
+    await asyncio.sleep(1.1)
     missing = object()
     assert await cache.get(random_string, missing) is missing
 
@@ -100,7 +100,7 @@ async def test_decorator(cache: Cache, random_string, plugin):
         plugin = plugin()
         cache.add_plugin(plugin)
 
-    @cache.cached(namespace=random_string, ttl=0.5)
+    @cache.cached(namespace=random_string, ttl=1)
     async def func():
         return random.randint(0, 10)
 
@@ -108,7 +108,7 @@ async def test_decorator(cache: Cache, random_string, plugin):
     for _ in range(100):
         assert await func() == x
 
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(1)
 
     if plugin:
         assert plugin.stats.cache_misses == 1
@@ -119,11 +119,11 @@ async def test_decorator(cache: Cache, random_string, plugin):
 
 async def test_clear_namespace(cache: Cache):
 
-    @cache.cached(ttl=1.0, namespace='inside', omit_self=False)
+    @cache.cached(ttl=1, namespace='inside', omit_self=False)
     async def func(val: str):
         return True if val else False
 
-    @cache.cached(ttl=1.0, namespace='outside', omit_self=False)
+    @cache.cached(ttl=1, namespace='outside', omit_self=False)
     async def other(val: str):
         return False if val else True
 

@@ -30,9 +30,9 @@ def redis_port() -> int:
 @pytest.mark.asyncio
 async def redis_backend(event_loop, redis_port):
     o = RedisBackend(
+        client_name='unittests',
         port=redis_port,
         db=REDIS_DB,
-        pool_minsize=1,
         pool_maxsize=3,
         loop=event_loop,
     )
@@ -63,7 +63,7 @@ def cleanup(request, redis_port):
     def clear_cache():
         loop = asyncio.get_event_loop()
         backend = RedisBackend(port=redis_port, db=REDIS_DB, loop=loop)
-        loop.run_until_complete(backend.clear())
+        loop.run_until_complete(backend.purge())
         loop.run_until_complete(backend.close())
         loop.close()
     request.addfinalizer(clear_cache)

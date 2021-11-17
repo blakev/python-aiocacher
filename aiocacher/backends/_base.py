@@ -57,7 +57,7 @@ class BackendT(Protocol):
     async def delete(self, key: str, _conn: Any) -> bool:
         ...
 
-    async def clear(self, _conn: Any) -> None:
+    async def purge(self, _conn: Any) -> None:
         ...
 
     async def clear_namespace(self, global_namespace: str, namespace: str, _conn: Any) -> int:

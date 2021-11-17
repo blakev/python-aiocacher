@@ -376,8 +376,8 @@ class Cache:
     @logged
     @timeout
     @locked
-    async def clear(self) -> None:
-        await self._backend.clear()
+    async def purge(self) -> None:
+        await self._backend.purge()
 
     @logged
     @timeout
