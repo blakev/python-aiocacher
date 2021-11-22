@@ -42,16 +42,16 @@ class BackendT(Protocol):
     async def get(self, key: str, _conn: Any) -> T:
         ...
 
-    async def set(self, key: str, value: T, ttl: Optional[float], _conn: Any) -> bool:
+    async def set(self, key: str, value: T, ttl: Optional[int], _conn: Any) -> bool:
         ...
 
-    async def replace(self, key: str, value: T, ttl: Optional[float], _conn: Any) -> T:
+    async def replace(self, key: str, value: T, ttl: Optional[int], _conn: Any) -> T:
         ...
 
-    async def setmany(self, keys_vals: Dict[str, T], ttl: Optional[float], _conn: Any) -> int:
+    async def setmany(self, keys_vals: Dict[str, T], ttl: Optional[int], _conn: Any) -> int:
         ...
 
-    async def expire(self, key: str, ttl: float, _conn: Any) -> bool:
+    async def expire(self, key: str, ttl: int, _conn: Any) -> bool:
         ...
 
     async def delete(self, key: str, _conn: Any) -> bool:

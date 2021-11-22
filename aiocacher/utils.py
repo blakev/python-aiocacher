@@ -29,14 +29,15 @@ def default_key_builder(func, args, kwargs) -> str:
         has_kwargs = True
         is_unary = False
 
+    f_name = func.__qualname__
+
     if is_unary:
-        k = str(args[0])
+        k = f_name, str(args[0])
     elif has_kwargs:
-        k = (args or None, frozenset(kwargs.items() if kwargs else []))
+        k = f_name, args or None, frozenset(kwargs.items() if kwargs else [])
     else:
-        k = args
-    key = sha1(str(k).encode('utf-8')).hexdigest()[:MAX_KEYLEN]
-    return trim_key(key)
+        k = f_name, args
+    return trim_key(sha1(''.join(map(str, k)).encode('utf-8')).hexdigest())
 
 
 def trim_key(key: str) -> str:

@@ -33,6 +33,7 @@ from aiocacher.serializers import SerializerT, DillSerializer
 UNSET = object()
 MISSING = object()
 GLOBAL_TTL = object()
+NO_CACHE = object()
 T = TypeVar('T')
 
 
@@ -97,6 +98,7 @@ class FnCache:
         wait_for_write: bool = True,
         use_plugins: bool = True,
         omit_self: bool = True,
+        cache_none: bool = True,
     ):
         if key_builder and not callable(key_builder):
             raise RuntimeError('key_builder must be callable')
@@ -111,6 +113,7 @@ class FnCache:
         self.cache = cache
         self._called = False
         self._omit_self = omit_self
+        self._cache_none = cache_none
 
     @property
     def use_plugins(self) -> bool:
@@ -189,12 +192,14 @@ class FnCache:
             fut = fn(*args, **kwargs)
 
         result = await fut
-        w_fut = self.cache.set(key, result, ttl=self._ttl)
 
-        if self._wait_for_write:
-            await w_fut
-        else:
-            asyncio.ensure_future(w_fut, loop=self.cache.loop)
+        if result is not NO_CACHE:
+            w_fut = self.cache.set(key, result, ttl=self._ttl)
+
+            if self._wait_for_write:
+                await w_fut
+            else:
+                asyncio.ensure_future(w_fut, loop=self.cache.loop)
 
         return result
 
@@ -204,12 +209,12 @@ class Cache:
     # yapf: disable
     def __init__(
         self,
-        backend:        BackendT,
+        backend:        Optional[BackendT] = None,
         namespace:      str = None,
         serializer:     SerializerT = None,
         plugins:        Optional[List[PluginT]] = None,
-        global_timeout: float = 5.0,
-        global_ttl:     Optional[float] = None,
+        global_timeout: int = 5,
+        global_ttl:     Optional[int] = None,
         key_builder:    Optional[KeyBuildFn] = None,
     ):
         # yapf: enable
@@ -222,8 +227,8 @@ class Cache:
         self._namespace = namespace
         self._serializer = serializer or DillSerializer()
         self._plugins = plugins or list()
-        self._g_timeout = max(0.1, global_timeout)
-        self._g_ttl = max(0.1, global_ttl) if global_ttl else None
+        self._g_timeout = max(1, global_timeout)
+        self._g_ttl = max(1, global_ttl) if global_ttl else None
         self._key_builder = key_builder or default_key_builder
 
     @property
@@ -238,6 +243,10 @@ class Cache:
     def plugins(self) -> List[PluginT]:
         return self._plugins
 
+    def set_backend(self, backend: BackendT) -> None:
+        self._backend = backend
+        self.lock = asyncio.Lock(loop=self._backend.loop)
+
     def add_plugin(self, plugin: PluginT):
         self.logger.debug(f'adding {plugin}')
         self._plugins.append(plugin)
@@ -247,7 +256,7 @@ class Cache:
         await self._on_teardown()
         await self._backend.close()
 
-    def _get_ttl(self, ttl: Optional[float]) -> Optional[float]:
+    def _get_ttl(self, ttl: Optional[int]) -> Optional[int]:
         if ttl is GLOBAL_TTL:
             return self._g_ttl
         return ttl
@@ -358,10 +367,10 @@ class Cache:
     async def expire(
         self,
         key: str,
-        ttl: float,
+        ttl: int,
     ) -> Any:
         key = self.build_key(key)
-        ttl = max(0.0, ttl)
+        ttl = max(0, ttl)
         res = await self._backend.expire(key, ttl)
         return res
 
