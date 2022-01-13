@@ -46,7 +46,7 @@ async def cache(redis_backend):
     o = Cache(
         redis_backend,
         namespace='unittests',
-        global_timeout=3.0,
+        global_timeout=5.0,
     )
     yield o
     await o.close()
@@ -65,5 +65,8 @@ def cleanup(request, redis_port):
         backend = RedisBackend(port=redis_port, db=REDIS_DB, loop=loop)
         loop.run_until_complete(backend.purge())
         loop.run_until_complete(backend.close())
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        for task in asyncio.all_tasks(loop):
+            task.cancel()
         loop.close()
     request.addfinalizer(clear_cache)

@@ -24,8 +24,8 @@ from typing import (
     TypeVar,
 )
 
-from aiocacher.types import KeyBuildFn
-from aiocacher.utils import trim_key, default_key_builder
+from aiocacher.types import KeyBuildFn, TimeT
+from aiocacher.utils import trim_key, default_key_builder, convert_ttl
 from aiocacher.plugins import PluginT
 from aiocacher.backends import BackendT
 from aiocacher.serializers import SerializerT, DillSerializer
@@ -91,7 +91,7 @@ class FnCache:
         self,
         cache: 'Cache',
         key: Optional[str],
-        ttl: Optional[float],
+        ttl: Optional[TimeT],
         key_builder: Optional[KeyBuildFn],
         namespace: Optional[str],
         as_last_arg: bool = False,
@@ -213,8 +213,8 @@ class Cache:
         namespace:      str = None,
         serializer:     SerializerT = None,
         plugins:        Optional[List[PluginT]] = None,
-        global_timeout: int = 5,
-        global_ttl:     Optional[int] = None,
+        global_timeout: TimeT = 5,
+        global_ttl:     Optional[TimeT] = None,
         key_builder:    Optional[KeyBuildFn] = None,
     ):
         # yapf: enable
@@ -227,8 +227,8 @@ class Cache:
         self._namespace = namespace
         self._serializer = serializer or DillSerializer()
         self._plugins = plugins or list()
-        self._g_timeout = max(1, global_timeout)
-        self._g_ttl = max(1, global_ttl) if global_ttl else None
+        self._g_timeout = max(1, convert_ttl(global_timeout))
+        self._g_ttl = max(1, convert_ttl(global_ttl)) if global_ttl else None
         self._key_builder = key_builder or default_key_builder
 
     @property
@@ -256,10 +256,10 @@ class Cache:
         await self._on_teardown()
         await self._backend.close()
 
-    def _get_ttl(self, ttl: Optional[int]) -> Optional[int]:
+    def _get_ttl(self, ttl: Optional[TimeT]) -> Optional[int]:
         if ttl is GLOBAL_TTL:
             return self._g_ttl
-        return ttl
+        return convert_ttl(ttl)
 
     def build_key(self, key: str, namespace: Optional[str] = None) -> str:
         if namespace is not None:
@@ -273,7 +273,7 @@ class Cache:
     def cached(
         self,
         key: Optional[str] = None,
-        ttl: Optional[float] = None,
+        ttl: Optional[TimeT] = None,
         namespace: Optional[str] = None,
         key_builder: Optional[KeyBuildFn] = None,
         as_last_arg: bool = False,
@@ -320,7 +320,7 @@ class Cache:
         self,
         key: str,
         value: Any,
-        ttl: Optional[float] = GLOBAL_TTL,
+        ttl: Optional[TimeT] = GLOBAL_TTL,
     ) -> Any:
         key = self.build_key(key)
         val = self._serializer.dumps(value)
@@ -334,7 +334,7 @@ class Cache:
     async def setmany(
         self,
         keys_vals: Dict[str, Any],
-        ttl: Optional[float] = GLOBAL_TTL,
+        ttl: Optional[TimeT] = GLOBAL_TTL,
     ):
         # yapf: disable
         keys_vals = {
@@ -353,7 +353,7 @@ class Cache:
         self,
         key: str,
         value: Any,
-        ttl: Optional[float] = GLOBAL_TTL,
+        ttl: Optional[TimeT] = GLOBAL_TTL,
     ) -> Any:
         key = self.build_key(key)
         val = self._serializer.dumps(value)
@@ -367,10 +367,10 @@ class Cache:
     async def expire(
         self,
         key: str,
-        ttl: int,
+        ttl: TimeT,
     ) -> Any:
         key = self.build_key(key)
-        ttl = max(0, ttl)
+        ttl = convert_ttl(ttl)
         res = await self._backend.expire(key, ttl)
         return res
 

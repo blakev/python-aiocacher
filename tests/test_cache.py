@@ -8,12 +8,16 @@
 
 import random
 import asyncio
+from collections import Counter
 from dataclasses import dataclass
+from datetime import timedelta
 
 import pytest
 
 from aiocacher.cache import UNSET, Cache
 
+
+MARK = str(random.randint(0xf000, 0xffff))
 
 # All test coroutines will be treated as marked.
 from aiocacher.plugins.stats import StatsPlugin
@@ -90,25 +94,26 @@ async def test_invalid_decorator(cache: Cache):
         not_coroutine()
 
 
-@pytest.mark.parametrize('plugin', [
-    None,
-    StatsPlugin,
+@pytest.mark.parametrize('ttl', [
+    1,
+    1.0,
+    timedelta(seconds=1),
 ])
-async def test_decorator(cache: Cache, random_string, plugin):
+async def test_decorator(cache: Cache, random_string, ttl):
+    plugin = StatsPlugin()
+    cache.add_plugin(plugin)
 
-    if plugin is not None:
-        plugin = plugin()
-        cache.add_plugin(plugin)
-
-    @cache.cached(namespace=random_string, ttl=1)
+    @cache.cached(namespace=random_string, ttl=ttl)
     async def func():
-        return random.randint(0, 10)
+        return random.randint(0, 100000)
 
     x = await func()
-    for _ in range(100):
-        assert await func() == x
+    y = [await func() for _ in range(50)]
 
-    await asyncio.sleep(1)
+    for val in y:
+        assert x == val, Counter(y)
+
+    await asyncio.sleep(0.05)
 
     if plugin:
         assert plugin.stats.cache_misses == 1

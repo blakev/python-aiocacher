@@ -6,12 +6,15 @@
 #   LiveViewTech
 # <<
 
+from datetime import timedelta
+
 from typing import (
     Any,
     Dict,
     Tuple,
     Callable,
     Protocol,
+    Union,
 )
 
 
@@ -22,3 +25,4 @@ class Callback(Protocol):
 
 
 KeyBuildFn = Callable[[Callable, Tuple[Any, ...], Dict[str, Any]], str]
+TimeT = Union[int, float, timedelta]
